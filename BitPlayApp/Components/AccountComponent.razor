@@ -1,0 +1,75 @@
+﻿
+@if(AccountModel != null)
+{
+    <div class="card text-bg-dark" style="max-width: 18rem;">
+        <div class="card-header border-white">Hesap</div>
+
+        <div class="card-body p-2">
+            <ul class="list-group">
+                <li class="list-group-item border-0" style="background-color: #8EB486;">
+                    <small>USD Bakiye = </small><strong>@AccountModel.UsdBalance</strong>
+                </li>
+                <li class="list-group-item bg-warning border-0">
+                    <small>BTC Bakiye = </small><strong>@AccountModel.BtcBalance</strong>
+                    <br />
+                    <small>BTC &approxeq; </small><strong>@EstimatedPrice $</strong>
+                </li>
+                <li class="list-group-item bg-light border-0">
+                    <small>Toplam Bakiye</small>
+                    <br/>
+                    <strong>@(AccountModel.UsdBalance + EstimatedPrice) $</strong>
+                    <br />
+                </li>
+            </ul>
+        </div>
+    </div>
+}
+else{
+    <div class="alert alert-danger text-center" role="alert">
+        Oturum Açın!
+    </div>
+}
+@code {
+    [Parameter]
+    public AccountModel? AccountModel { get; set; }
+
+    private decimal EstimatedPrice { get; set; }
+
+    protected override void OnInitialized()
+    {
+        // StateManager'a abone ol
+        BitcoinStateManager.OnChange += HandleBitcoinPriceChanged;
+        // Başlangıçta fiyatı hesapla
+        UpdateEstimatedPrice();
+    }
+
+    private void HandleBitcoinPriceChanged()
+    {
+        // Bitcoin fiyatı değiştiğinde, fiyatı güncelle
+        UpdateEstimatedPrice();
+        // Render işlemi için StateHasChanged çağrılır
+        StateHasChanged();
+    }
+
+
+
+    private void UpdateEstimatedPrice()
+    {
+        if (AccountModel != null && BitcoinStateManager.BTCSellPrice != 0)
+        {
+            EstimatedPrice = AccountModel.BtcBalance * BitcoinStateManager.BTCSellPrice;
+        }
+    }
+
+    // OnChange event'inden çıkarken abone olmayı unutmamak
+    public void Dispose()
+    {
+        BitcoinStateManager.OnChange -= HandleBitcoinPriceChanged;
+    }
+
+    // Parametreler set edildiğinde fiyatı güncelle
+    protected override void OnParametersSet()
+    {
+        UpdateEstimatedPrice();
+    }
+}

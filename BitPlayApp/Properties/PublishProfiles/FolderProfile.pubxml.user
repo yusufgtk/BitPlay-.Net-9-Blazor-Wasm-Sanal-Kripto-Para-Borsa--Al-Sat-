@@ -1,0 +1,43 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--
+https://go.microsoft.com/fwlink/?LinkID=208121.
+-->
+<Project>
+  <PropertyGroup>
+    <_PublishTargetUrl>C:\Users\yusufgtk\Desktop</_PublishTargetUrl>
+    <History>True|2024-12-10T20:40:51.7680911Z||;</History>
+    <LastFailureDetails />
+  </PropertyGroup>
+  <ItemGroup>
+    <File Include="Models/AccountModel.cs">
+      <publishTime>12/11/2024 16:08:54</publishTime>
+    </File>
+    <File Include="Models/BitcoinModel.cs">
+      <publishTime>12/11/2024 16:08:58</publishTime>
+    </File>
+    <File Include="Models/BitcoinResponseModel.cs">
+      <publishTime>12/11/2024 16:09:01</publishTime>
+    </File>
+    <File Include="Models/BuyBitcoinModel.cs">
+      <publishTime>12/11/2024 16:09:07</publishTime>
+    </File>
+    <File Include="Models/LoginModel.cs">
+      <publishTime>12/11/2024 16:09:13</publishTime>
+    </File>
+    <File Include="Models/LoginResponseModel.cs">
+      <publishTime>12/11/2024 16:10:55</publishTime>
+    </File>
+    <File Include="Models/RegisterModel.cs">
+      <publishTime>12/11/2024 16:09:27</publishTime>
+    </File>
+    <File Include="Models/RegisterResponseModel.cs">
+      <publishTime>12/11/2024 16:09:30</publishTime>
+    </File>
+    <File Include="Models/SellBitcoinModel.cs">
+      <publishTime>12/11/2024 16:11:34</publishTime>
+    </File>
+    <File Include="Models/StateManager.cs">
+      <publishTime>12/11/2024 16:09:38</publishTime>
+    </File>
+  </ItemGroup>
+</Project>

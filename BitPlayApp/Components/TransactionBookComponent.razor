@@ -1,0 +1,67 @@
+﻿@inject IProccessService ProccessService
+@inject IJSRuntime JSRuntime
+
+<!-- Button trigger modal -->
+<button type="button" class="btn btn-outline-light" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
+    <i class="fa-solid fa-list-check"></i>
+</button>
+
+<!-- Modal -->
+<div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content bg-dark">
+            <div class="modal-header d-flex justify-content-between">
+                <h1 class="modal-title fs-5" id="staticBackdropLabel">İşlem Defteri</h1>
+                <button type="button" class="btn btn-outline-light" @onclick="UpdateProccess">
+                    <i class="fa-solid fa-rotate-right @(refreshStatus ? "fa-spin" : "")"></i>
+                </button>
+            </div>
+            <div class="modal-body" style="height: 450px; overflow-y: auto;">
+                <ul class="list-group">
+                    @foreach (var item in proccessModels)
+                    {
+                        <li class="list-group-item text-black @(item.ProccessName == "Buy" ? "bg-success" : "bg-danger")">
+                            <div>
+                                <small>İşlem numarası: @item.Id</small><br/>
+                                <strong>@item.CryptoName</strong><br />
+                                <small>Miktar: @item.Amount</small>
+                                <small> / </small>
+                                <small>Kur: @item.Rate</small>
+                                <small> / </small>
+                                <small>Tutar: @item.Total</small><br />
+                                <small>İşlem sonrası bakiye: @item.AfterProccessBalance</small><br />
+                                <small>İşlem tarihi: @item.CreatedTime</small><br />
+                            </div>
+                        </li>
+
+                    }
+                </ul>
+            </div>
+            <div class="modal-footer p-2">
+                <button type="button" class="btn btn-danger p-1" data-bs-dismiss="modal">Kapat</button>
+            </div>
+        </div>
+    </div>
+</div>
+@code {
+    private string? userId;
+    private string? idToken;
+    public List<ProccessModel> proccessModels = new();
+    private bool refreshStatus = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await UpdateProccess();
+    }
+
+    public async Task UpdateProccess()
+    {
+        refreshStatus = true;
+        userId = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "userId");
+        idToken = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "idToken");
+        proccessModels = await ProccessService.GetAllProccess(userId, idToken);
+        proccessModels = proccessModels.OrderByDescending(i => DateTime.Parse(i.CreatedTime)).ToList();
+        refreshStatus = false;
+    }
+
+}

@@ -1,0 +1,6 @@
+C:\Users\yusufgtk\Desktop\QR.Menu\QR.Menu\obj\Debug\net9.0\BitcoinAlSat.csproj.AssemblyReference.cache
+C:\Users\yusufgtk\Desktop\QR.Menu\QR.Menu\obj\Debug\net9.0\BitcoinAlSat.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\yusufgtk\Desktop\QR.Menu\QR.Menu\obj\Debug\net9.0\BitcoinAlSat.AssemblyInfoInputs.cache
+C:\Users\yusufgtk\Desktop\QR.Menu\QR.Menu\obj\Debug\net9.0\BitcoinAlSat.AssemblyInfo.cs
+C:\Users\yusufgtk\Desktop\QR.Menu\QR.Menu\obj\Debug\net9.0\BitcoinAlSat.csproj.CoreCompileInputs.cache
+C:\Users\yusufgtk\Desktop\QR.Menu\QR.Menu\obj\Debug\net9.0\BitcoinAlSat.MvcApplicationPartsAssemblyInfo.cache

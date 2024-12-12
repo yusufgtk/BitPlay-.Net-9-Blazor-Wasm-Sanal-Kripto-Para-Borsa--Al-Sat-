@@ -1,0 +1,17 @@
+﻿
+.tradingview-widget-container {
+    position: absolute; /* Sabit konumda olacak */
+    top: 0;
+    left: 0;
+    height: 100vh; /* Viewport yüksekliği */
+    width: 100vw; /* Viewport genişliği */
+}
+
+.tradingview-widget-container__widget {
+    height: 100%;
+    width: 100%;
+}
+
+.tradingview-widget-copyright {
+    display: none; /* Copyright kısmını gizle */
+}

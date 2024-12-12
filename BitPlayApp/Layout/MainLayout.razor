@@ -1,0 +1,52 @@
+﻿@inherits LayoutComponentBase
+@inject IJSRuntime JSRuntime
+@inject IAccountService AccountService
+
+
+<div class=@(themeColor == "bg-light" ? "light-theme" : "dark-theme") style="min-height: 100vh;">
+    <div>
+        <NavMenu action="ChangeTheme" AccountModel="accountModel" />
+    </div>
+
+    <main>
+        <article>
+            @Body
+        </article>
+    </main>
+</div>
+
+@code{
+    private string themeColor = StateManager.ThemeColor;
+    private AccountModel accountModel = new AccountModel();
+    private string? idToken;
+    private string? email;
+    private string? userId;
+    protected override async Task OnInitializedAsync()
+    {
+        idToken = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "idToken");
+        email = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "email");
+        userId = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "userId");
+        accountModel.UserEmail = email;
+        Console.WriteLine(email);
+        if(idToken != null)
+        {
+            await UpdateAccoun();
+        }
+        AccountStateManager.OnChange += HandleAccountChanged;
+    }
+
+    private async void HandleAccountChanged()
+    {
+        await UpdateAccoun();
+        StateHasChanged();
+    }
+    private async Task UpdateAccoun()
+    {
+        accountModel = await AccountService.GetAccountByUserIdAsync(userId, idToken);
+    }
+    private void ChangeTheme()
+    {
+        StateManager.ChangeTheme();
+        themeColor = StateManager.ThemeColor;
+    }
+}

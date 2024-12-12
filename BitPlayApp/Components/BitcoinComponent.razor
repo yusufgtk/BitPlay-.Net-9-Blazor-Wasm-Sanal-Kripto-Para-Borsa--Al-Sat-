@@ -1,0 +1,79 @@
+﻿@inject IBitcoinService BitcoinService
+
+<div class="pb-5">
+    <div class="d-flex justify-content-end mb-3 mx-3">
+        <div>
+            <a href="/chart" target="_blank" class="btn" style="color: #A12568; border-width:2px; border-color: #A12568;">
+                <i class="fa-solid fa-chart-line fa-lg"></i>
+            </a>
+        </div>
+
+    </div>
+        <div class="row d-flex justify-content-center">
+            <div class="col-4 col-md-3 col-lg-2 col-xl-2 d-flex justify-content-center mb-3">
+                <img src="Images/bitcoin.png" alt="Bitcoin" style="width: 70%;" />
+            </div>
+            <div>
+                @if (bitcoinResponseModel is null)
+                {
+                    <h5 class="card-title placeholder-glow text-center">
+                        <span class="placeholder col-4"></span>
+                    </h5>
+
+                }
+                else
+                {
+                    <h5 class="text-center @(StateManager.TextColor)">
+                        <strong class="fs-3 price-container @(bitcoinModel.Price > tempPrice ? "text-success" : "text-danger")">@bitcoinModel.Price $</strong>
+                    </h5>
+                }
+            </div>
+                    
+        </div>
+    <div class="row mt-5">
+        <div class="col-12 col-lg-6 col-xl-6 d-flex justify-content-center">
+            <BuyBitcoinComponent bitcoinModel="bitcoinModel"></BuyBitcoinComponent>
+        </div>
+        <div class="col-12 col-lg-6 col-xl-6 d-flex justify-content-center">
+            <SellBitcoinComponent bitcoinModel="bitcoinModel"></SellBitcoinComponent>
+        </div>
+    </div>
+
+</div>
+
+
+
+
+@code {
+
+    private BitcoinModel bitcoinModel = new();
+    BitcoinResponseModel bitcoinResponseModel;
+    private Timer timer;
+    private decimal tempPrice;
+    private string themeColor = StateManager.ThemeColor;
+
+    protected override async Task OnInitializedAsync()
+    {
+        bitcoinResponseModel = await BitcoinService.GetBitcoinPrice();
+        bitcoinModel.Price = bitcoinResponseModel.USD;
+        bitcoinModel.BuyPrice = Math.Round(bitcoinModel.Price + bitcoinModel.Price * 0.005m, 2);
+        bitcoinModel.SellPrice = Math.Round(bitcoinModel.Price - bitcoinModel.Price * 0.005m, 2);
+        timer = new Timer(async _ =>
+        {
+            bitcoinResponseModel = await BitcoinService.GetBitcoinPrice();
+            tempPrice = bitcoinModel.Price;
+            bitcoinModel.Price = bitcoinResponseModel.USD;
+            bitcoinModel.BuyPrice = Math.Round(bitcoinModel.Price + bitcoinModel.Price * 0.005m, 2);
+            bitcoinModel.SellPrice = Math.Round(bitcoinModel.Price - bitcoinModel.Price * 0.005m, 2);
+            BitcoinStateManager.BTCSellPrice = bitcoinModel.SellPrice;
+            StateHasChanged(); //Sayfayı yeniden render eder
+
+        }, null, TimeSpan.Zero, TimeSpan.FromSeconds(15));
+    }
+
+    public void Dispose()
+    {
+        // Component yok olduğunda timer'ı temizle
+        timer?.Dispose();
+    }
+}

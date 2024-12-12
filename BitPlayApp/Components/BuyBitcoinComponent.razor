@@ -1,0 +1,136 @@
+﻿@inject IAccountService AccountService
+@inject IProccessService ProccessService
+@inject IJSRuntime JSRuntime
+@if (bitcoinModel != null)
+{
+    <div class="card text-bg-success mb-3" style="width: 80%; border-radius: 15px;">
+        <div class="card-header fw-bold">Al</div>
+        <div class="card-body">
+            <h6 class="card-title">Fiyat: <strong>@bitcoinModel.BuyPrice</strong> $</h6>
+            <EditForm Model="buyBitcoinModel" OnValidSubmit="BuySubmit">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+                <div class="mb-3">
+                    <label for="amount" class="form-label">Miktar</label>
+                    <InputNumber class="form-control" id="amount"  @bind-Value="buyBitcoinModel.BTCAmount" @oninput="OnBTCAmountChanged" />
+                    <span>@buyBitcoinModel.BTCAmount</span>
+                </div>
+                <div class="mb-3">
+                    <label for="totalPrice" class="form-label">Tutar</label>
+                    <InputNumber class="form-control" id="totalPrice" @bind-Value="buyBitcoinModel.USDAmount" @oninput="OnUSDAmountChanged" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Komisyon: @buyBitcoinModel.Commission $</label>
+                </div>
+                <button type="submit" class="btn btn-outline-light border border-2 fw-bolder">
+                    <span>Al</span>
+                    @if(loading)
+                    {
+                        <i class="fa-solid fa-spinner fa-spin-pulse ms-2 "></i>
+                    }
+
+                </button>
+            </EditForm>
+        </div>
+        @if(btcBuyStatus)
+        {
+            <div class="alert @alertColor d-flex justify-content-center my-2" role="alert">
+                <div class="d-flex">
+                    <i class="fa-solid fa-circle-check me-2"></i><span>@btcBuyMessage</span>
+                </div>
+            </div>
+        }
+    </div>
+
+}
+else
+{
+    <div class="alert text-center text-bg-danger">Hata meydana geldi!</div>
+}
+
+
+@code {
+    [Parameter]
+    public BitcoinModel? bitcoinModel { get; set; }
+    private BuyBitcoinModel buyBitcoinModel = new();
+
+    private bool btcBuyStatus = false;
+    private string? btcBuyMessage;
+    private string? alertColor;
+    private bool loading = false;
+
+    private void OnBTCAmountChanged(ChangeEventArgs e)
+    {
+        if (e.Value is null)
+            buyBitcoinModel.BTCAmount = 0.000000m;
+
+        buyBitcoinModel.BTCAmount = Convert.ToDecimal(e.Value);
+        buyBitcoinModel.BTCAmount = Math.Round(buyBitcoinModel.BTCAmount, 6);
+        if(buyBitcoinModel?.BTCAmount != null && bitcoinModel?.BuyPrice != null)
+        {
+            buyBitcoinModel.USDAmount = Math.Round(buyBitcoinModel.BTCAmount * bitcoinModel.BuyPrice, 2);
+            buyBitcoinModel.Commission = Math.Round(buyBitcoinModel.USDAmount * 0.001m, 2);
+        }
+    }
+    private void OnUSDAmountChanged(ChangeEventArgs e)
+    {
+        if (e.Value is null)
+            buyBitcoinModel.USDAmount = 0.00m;
+
+        buyBitcoinModel.USDAmount = Convert.ToDecimal(e.Value.ToString());
+        buyBitcoinModel.Commission = Math.Round(buyBitcoinModel.USDAmount * 0.001m, 2);
+        if(buyBitcoinModel?.BTCAmount != null && bitcoinModel?.BuyPrice != null)
+        {
+            buyBitcoinModel.BTCAmount = Math.Round(buyBitcoinModel.USDAmount / bitcoinModel.BuyPrice, 6);
+        }
+    }
+    private async Task BuySubmit()
+    {
+        if(buyBitcoinModel.BTCAmount>0 && buyBitcoinModel.USDAmount>10)
+        {
+            loading = true;
+            string idToken = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "idToken");
+            string userId = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "userId");
+            AccountModel accountModel = await AccountService.GetAccountByUserIdAsync(userId, idToken);
+            if (accountModel.UsdBalance >= (buyBitcoinModel.USDAmount + buyBitcoinModel.Commission))
+            {
+                accountModel.UsdBalance = accountModel.UsdBalance - (buyBitcoinModel.USDAmount + buyBitcoinModel.Commission);
+                accountModel.BtcBalance = accountModel.BtcBalance + buyBitcoinModel.BTCAmount;
+
+                btcBuyStatus = await AccountService.UpdateAccountByUserIdAsync(accountModel, userId, idToken);
+                if(btcBuyStatus)
+                {
+                    ProccessModel proccessModel = new ProccessModel
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        ProccessName = "Buy",
+                        CryptoName = "BTC",
+                        Amount = buyBitcoinModel.BTCAmount,
+                        Rate = bitcoinModel.SellPrice,
+                        Total = buyBitcoinModel.USDAmount,
+                        CreatedTime = DateTime.Now.ToString("dd-MM-yyyy HH:mm:ss"),
+                        UserId = userId,
+                        AfterProccessBalance = accountModel.BtcBalance
+                    };
+                    bool proccessStatus = await ProccessService.CreateProccess(proccessModel, userId, idToken);
+                    if(proccessStatus)
+                    {
+                        btcBuyMessage = "İşlem Başarılı!";
+                        alertColor = "alert-success";
+                        AccountStateManager.Status = btcBuyStatus;
+                        buyBitcoinModel.BTCAmount = 0.000000m;
+                        buyBitcoinModel.USDAmount = 0.00m;
+                    }
+                    
+                }
+            }
+            else
+            {
+                btcBuyStatus = true;
+                btcBuyMessage = "Bakiyeniz yetersiz!";
+                alertColor = "alert-danger";
+            }
+            loading = false;
+        }
+    }
+}

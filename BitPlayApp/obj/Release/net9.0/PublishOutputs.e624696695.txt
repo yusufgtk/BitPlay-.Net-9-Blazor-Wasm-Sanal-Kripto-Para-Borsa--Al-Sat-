@@ -1,0 +1,1 @@
+C:\Users\yusufgtk\Desktop\QR.Menu\QR.Menu\obj\Release\net9.0\browser-wasm\PubTmp\Out\web.config
